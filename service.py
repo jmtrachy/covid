@@ -36,7 +36,29 @@ class USService:
 class StateService:
     def __init__(self):
         states = client.get_us_states()
-        state_dailies = {}
+        self.state_dailies_map = {}
         for s in states:
             state = s.get('state')
-            state_dailies[state] = client.get_state_dailies(state)
+            self.state_dailies_map[state] = client.get_state_dailies(state)
+
+    def get_current_total_positives(self, state, offset=0):
+        return self.state_dailies_map.get(state)[offset].total_positives
+
+    def get_current_positives_increase(self, state, offset=0):
+        return self.state_dailies_map.get(state)[offset].positives_increase
+
+    @staticmethod
+    def get_positivity(daily):
+        if daily.total_tests_increase > 0:
+            return daily.positives_increase / daily.total_tests_increase
+        else:
+            return 0
+
+    def get_historic_positivity(self, state, num_days=14, offset=0):
+        dailies = self.state_dailies_map.get(state)
+        return [StateService.get_positivity(dailies[day]) for day in range(offset, num_days)]
+
+    def get_positivities_today(self, threshold=10):
+        return [StateService.get_positivity(state_dailies[0]) for state_dailies in self.state_dailies_map.values()]
+
+

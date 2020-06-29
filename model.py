@@ -1,3 +1,5 @@
+import json
+
 class USDaily:
     def __init__(self,
                  date,  # Date for which the daily totals were collected

@@ -1,14 +1,53 @@
 import json
+import jsonpickle
 import model
+import os.path
 import requests
+import time
+
+
+def generate_file_name(identifier):
+    return './data/{}.json'.format(identifier)
+
+
+def use_cache(state):
+    # Get the generated file name - standardized to be in one place
+    file_name = generate_file_name(state)
+
+    # Check to see if the file exists.
+    if os.path.isfile(file_name):
+        # Get the current time in seconds
+        now = time.time()
+
+        # If the file was last modified more than an hour ago then it's not considered valid
+        valid_file = (now - os.path.getmtime(file_name)) < 3600
+    else:
+        valid_file = False
+
+    return valid_file
 
 
 def get_us_dailies():
-    resp = requests.get('https://covidtracking.com/api/v1/us/daily.json')
-    resp_json = json.loads(resp.content)
+    us = 'us'
 
+    if use_cache(us):
+
+        # If the file is properly cached then just use it
+        with open(generate_file_name(us), 'r') as f:
+            dailies_json = json.load(f)
+
+    else:
+        # If the file has not been properly cached then retrieve
+        resp = requests.get('https://covidtracking.com/api/v1/us/daily.json')
+        dailies_json = json.loads(resp.content)
+
+        # Now cache the file for next time through
+        with open(generate_file_name(us), 'w') as f:
+            f.write(jsonpickle.encode(dailies_json, unpicklable=False))
+
+    # Convert the raw json into our python objects
     dailies = []
-    for daily in resp_json:
+    for daily in dailies_json:
         dailies.append(model.USDaily(
             date=daily.get('date'),
             date_entered=daily.get('dateChecked'),
@@ -30,7 +69,7 @@ def get_us_states():
 
 
 def get_state_dailies(state):
-    resp = requests.get('https://covidtracking.com/api/v1/states/{}/daily.json'.format(state))
+    resp = requests.get('https://covidtracking.com/api/v1/states/{}/daily.json'.format(state.lower()))
     resp_json = json.loads(resp.content)
 
     dailies = []
@@ -53,12 +92,11 @@ def get_state_dailies(state):
             total_tests=daily.get('totalTestResults'),
             total_tests_increase=daily.get('totalTestResultsIncrease')
         ))
-        print('date = {}; deaths_increase = {}'.format(
-            dailies[len(dailies) - 1].date,
-            dailies[len(dailies) - 1].deaths_increase
-        ))
+
+    return dailies
 
 
 if __name__ == '__main__':
-    # us_dailies = get_us_dailies()
-    get_state_dailies('mn')
+    us_dailies = get_us_dailies()
+    # get_state_dailies('mn')
+    print('hi')
