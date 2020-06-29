@@ -1,4 +1,6 @@
 import client
+from model import StateDaily
+from typing import Dict, List
 
 
 class USService:
@@ -36,7 +38,7 @@ class USService:
 class StateService:
     def __init__(self):
         states = client.get_us_states()
-        self.state_dailies_map = {}
+        self.state_dailies_map: Dict[str, List[StateDaily]] = {}
         for s in states:
             state = s.get('state')
             self.state_dailies_map[state] = client.get_state_dailies(state)
@@ -58,10 +60,12 @@ class StateService:
         dailies = self.state_dailies_map.get(state)
         return [StateService.get_positivity(dailies[day]) for day in range(offset, num_days)]
 
-    def get_positivities_today(self, threshold=10):
-        return [(state_dailies[0].state, StateService.get_positivity(state_dailies[0]))
-                for state_dailies in self.state_dailies_map.values()
-                if 1 > StateService.get_positivity(state_dailies[0]) > (threshold / 100)]
+    def get_positivities_today(self, threshold: int = 10):
+        return {
+            state_dailies[0].state: StateService.get_positivity(state_dailies[0])
+            for state_dailies in self.state_dailies_map.values()
+            if 1 > StateService.get_positivity(state_dailies[0]) > (threshold / 100)
+        }
 
 
 
