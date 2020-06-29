@@ -33,3 +33,7 @@ if __name__ == '__main__':
                 print(' {0:.1%}'.format(daily_positivity), end=',')
             else:
                 print(' {0:.1%}'.format(daily_positivity))
+
+    todays_positives = state_service.get_positivities_today()
+    for daily_positive in todays_positives:
+        print('{0} has a positivity rate of {1:.1%}'.format(daily_positive[0], daily_positive[1]))

@@ -59,6 +59,9 @@ class StateService:
         return [StateService.get_positivity(dailies[day]) for day in range(offset, num_days)]
 
     def get_positivities_today(self, threshold=10):
-        return [StateService.get_positivity(state_dailies[0]) for state_dailies in self.state_dailies_map.values()]
+        return [(state_dailies[0].state, StateService.get_positivity(state_dailies[0]))
+                for state_dailies in self.state_dailies_map.values()
+                if 1 > StateService.get_positivity(state_dailies[0]) > (threshold / 100)]
+
 
 

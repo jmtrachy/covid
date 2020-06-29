@@ -28,7 +28,7 @@ def use_cache(state):
 
 
 def get_us_dailies():
-    us = 'us'
+    us = 'US'
 
     if use_cache(us):
 
@@ -69,11 +69,21 @@ def get_us_states():
 
 
 def get_state_dailies(state):
-    resp = requests.get('https://covidtracking.com/api/v1/states/{}/daily.json'.format(state.lower()))
-    resp_json = json.loads(resp.content)
+
+    if use_cache(state):
+        with open(generate_file_name(state), 'r') as f:
+            dailies_json = json.load(f)
+
+    else:
+
+        resp = requests.get('https://covidtracking.com/api/v1/states/{}/daily.json'.format(state.lower()))
+        dailies_json = json.loads(resp.content)
+
+        with open(generate_file_name(state), 'w') as f:
+            f.write(jsonpickle.encode(dailies_json, unpicklable=False))
 
     dailies = []
-    for daily in resp_json:
+    for daily in dailies_json:
         dailies.append(model.StateDaily(
             state=daily.get('state'),
             date=daily.get('date'),
@@ -97,6 +107,6 @@ def get_state_dailies(state):
 
 
 if __name__ == '__main__':
-    us_dailies = get_us_dailies()
-    # get_state_dailies('mn')
+    # us_dailies = get_us_dailies()
+    get_state_dailies('mn')
     print('hi')
