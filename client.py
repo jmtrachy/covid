@@ -43,7 +43,7 @@ def get_us_dailies():
 
         # Now cache the file for next time through
         with open(generate_file_name(us), 'w') as f:
-            f.write(jsonpickle.encode(dailies_json, unpicklable=False))
+            f.write(jsonpickle.encode(dailies_json, unpicklable=False, indent=2))
 
     # Convert the raw json into our python objects
     dailies = []
@@ -80,7 +80,7 @@ def get_state_dailies(state):
         dailies_json = json.loads(resp.content)
 
         with open(generate_file_name(state), 'w') as f:
-            f.write(jsonpickle.encode(dailies_json, unpicklable=False))
+            f.write(jsonpickle.encode(dailies_json, unpicklable=False, indent=2))
 
     dailies = []
     for daily in dailies_json:

@@ -37,17 +37,26 @@ class USService:
 
 class StateService:
     def __init__(self):
-        states = client.get_us_states()
-        self.state_dailies_map: Dict[str, List[StateDaily]] = {}
-        for s in states:
-            state = s.get('state')
-            self.state_dailies_map[state] = client.get_state_dailies(state)
+        self.states = client.get_us_states()
+        self.state_abbvs: List[str] = [state.get('state') for state in self.states]
+        self.state_dailies_map: Dict[str, List[StateDaily]] = {
+            state.get('state'): client.get_state_dailies(state.get('state')) for state in self.states
+        }
 
     def get_current_total_positives(self, state, offset=0):
         return self.state_dailies_map.get(state)[offset].total_positives
 
     def get_current_positives_increase(self, state, offset=0):
         return self.state_dailies_map.get(state)[offset].positives_increase
+
+    def get_historic_positive_cases(self, state: str, num_days: int = 14, offset: int = 0):
+        state_dailies: List[StateDaily] = self.state_dailies_map.get(state)
+        return {state_dailies[day].date: state_dailies[day].total_tests_increase for day in range(offset, num_days)}
+
+    def get_dangerous_positive_increases(self):
+        dangerous_increases: Dict[str, float] = {
+            state: self.get_historic_positive_cases(state) for state in self.state_abbvs
+        }
 
     @staticmethod
     def get_positivity(daily):
@@ -68,4 +77,6 @@ class StateService:
         }
 
 
+if __name__ == '__main__':
+    ss = StateService()
 

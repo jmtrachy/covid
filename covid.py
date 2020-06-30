@@ -34,6 +34,16 @@ if __name__ == '__main__':
             else:
                 print(' {0:.1%}'.format(daily_positivity))
 
+        print('{} tracked new cases of the following: '.format(state), end='')
+        historic_cases = state_service.get_historic_positive_cases(state)
+        count = 0
+        for day in historic_cases:
+            count += 1
+            if count != len(historic_cases):
+                print(' {}'.format(historic_cases.get(day)), end=',')
+            else:
+                print(' {}'.format(historic_cases.get(day)))
+
     todays_positives = state_service.get_positivities_today()
     for state in todays_positives:
         print('{0} has a positivity rate of {1:.1%}'.format(state, todays_positives[state]))
