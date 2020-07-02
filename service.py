@@ -51,7 +51,18 @@ class StateService:
 
     def get_historic_positive_cases(self, state: str, num_days: int = 14, offset: int = 0):
         state_dailies: List[StateDaily] = self.state_dailies_map.get(state)
-        return {state_dailies[day].date: state_dailies[day].total_tests_increase for day in range(offset, num_days)}
+        return [state_dailies[day].positives_increase for day in range(offset, num_days)]
+
+    def get_historic_hospitalizations(self, state: str, num_days: int = 14, offset: int = 0):
+        state_dailies: List[StateDaily] = self.state_dailies_map.get(state)
+        return [state_dailies[day].hospitalized_currently for day in range(offset, num_days)]
+
+    def get_14_day_avg_cases(self, state: str, offset: int =0):
+        state_dailies = self.state_dailies_map.get(state)
+        return int((state_dailies[offset].total_positives - state_dailies[offset + 13].total_positives) / 14)
+
+    def define_dangerous_case_increases(self, state: str):
+        print('hi')
 
     def get_dangerous_positive_increases(self):
         dangerous_increases: Dict[str, float] = {
@@ -71,9 +82,9 @@ class StateService:
 
     def get_positivities_today(self, threshold: int = 10):
         return {
-            state_dailies[0].state: StateService.get_positivity(state_dailies[0])
+            state_dailies[0].state: positivity
             for state_dailies in self.state_dailies_map.values()
-            if 1 > StateService.get_positivity(state_dailies[0]) > (threshold / 100)
+            if (positivity := StateService.get_positivity(state_dailies[0])) > (threshold / 100)
         }
 
 

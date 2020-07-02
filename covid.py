@@ -40,9 +40,19 @@ if __name__ == '__main__':
         for day in historic_cases:
             count += 1
             if count != len(historic_cases):
-                print(' {}'.format(historic_cases.get(day)), end=',')
+                print(' {}'.format(day), end=',')
             else:
-                print(' {}'.format(historic_cases.get(day)))
+                print(' {}'.format(day))
+
+        print('{} has the following hospitalization numbers: '.format(state), end='')
+        hosps = state_service.get_historic_hospitalizations(state)
+        count = 0
+        for day in hosps:
+            count += 1
+            if count != len(hosps):
+                print(' {}'.format(day), end=',')
+            else:
+                print(' {}'.format(day))
 
     todays_positives = state_service.get_positivities_today()
     for state in todays_positives:
