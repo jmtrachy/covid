@@ -67,6 +67,6 @@ if __name__ == '__main__':
                 else:
                     print(' {}'.format(day))
 
-        todays_positives = state_service.get_positivities_today()
+        todays_positives = state_service.get_positivities_today_over_threshold()
         for state in todays_positives:
             print('{0} has a positivity rate of {1:.1%}'.format(state, todays_positives[state]))
