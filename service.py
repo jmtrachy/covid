@@ -1,5 +1,7 @@
 import client
+from functools import reduce
 from model import StateDaily
+from operator import add
 from typing import Dict, List
 
 
@@ -13,8 +15,9 @@ class USService:
     def get_positives_change_since_yesterday(self, offset=0):
         return self.us_dailies[offset].total_positives - self.us_dailies[offset + 1].total_positives
 
-    def get_14_day_avg(self, offset=0):
-        return int((self.us_dailies[offset].total_positives - self.us_dailies[offset + 13].total_positives) / 14)
+    def get_14_day_avg_positivities(self, offset: int = 0, num_days: int = 14):
+        return int((self.us_dailies[offset].total_positives -
+                    self.us_dailies[offset + (num_days - 1)].total_positives) / num_days)
 
     def get_positivity(self, offset=0):
         today = self.us_dailies[offset]
@@ -25,14 +28,25 @@ class USService:
 
         return new_positives / (new_positives + new_negatives)
 
-    def get_moving_avg(self):
-        return [self.get_14_day_avg(offset) for offset in range(0, 30)]
+    def get_moving_avg(self, num_days: int = 14):
+        return [self.get_14_day_avg_positivities(offset) for offset in range(0, 30)]
 
     def get_14_day_positives(self):
         return [self.get_positives_change_since_yesterday(offset) for offset in range(0, 14)]
 
-    def get_14_day_positivity(self):
-        return [self.get_positivity(offset) for offset in range(0, 14)]
+    def get_recent_positivities(self, offset: int = 0, num_days: int = 14):
+        return [self.get_positivity(day) for day in range(offset, num_days)]
+
+    def get_average_positivities(self, offset: int = 0, num_days: int = 14):
+        return get_positivity_average([
+            self.get_positivity(day) for day in range(offset, num_days)
+        ])
+
+    def get_moving_average_positivities(self, offset: int = 0, num_days: int = 14):
+        return [
+            self.get_average_positivities(day)
+            for day in range(offset, num_days)
+        ]
 
 
 class StateService:
@@ -86,6 +100,23 @@ class StateService:
             for state_dailies in self.state_dailies_map.values()
             if (positivity := StateService.get_positivity(state_dailies[0])) > (threshold / 100)
         }
+
+
+def is_valid_positivity(positivity: float):
+    return positivity is not None and positivity != 0.0 and positivity != 1.0
+
+
+def get_positivity_average(positivities: List[float]):
+    p_filtered = [
+        p
+        for p in positivities
+        if is_valid_positivity(p)
+    ]
+    total = reduce(add, p_filtered)
+    if len(p_filtered) == 0:
+        return None
+    else:
+        return total / len(p_filtered)
 
 
 if __name__ == '__main__':
