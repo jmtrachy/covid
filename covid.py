@@ -70,3 +70,7 @@ if __name__ == '__main__':
         todays_positives = state_service.get_positivities_today_over_threshold()
         for state in todays_positives:
             print('{0} has a positivity rate of {1:.1%}'.format(state, todays_positives[state]))
+
+        danger_positivities = state_service.get_danger_states_avg_positivities()
+        for state in danger_positivities:
+            print('{0} has a 14 day positivity average of {1:.1%}'.format(state, danger_positivities[state]))

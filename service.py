@@ -6,10 +6,18 @@ from typing import Dict, List
 
 
 class USService:
+    """
+    Service designed for analyzing national level data. Upon instantiation it will acquire a collection
+    of all the national level data available from the data feed
+    """
+
     def __init__(self):
         self.us_dailies = client.get_us_dailies()
 
     def get_current_total_positives(self):
+        """
+        :return: The cumulative number of all positives nationally
+        """
         return self.us_dailies[0].total_positives
 
     def get_positives_change_since_yesterday(self, offset=0):
@@ -75,6 +83,26 @@ class StateService:
         state_dailies = self.state_dailies_map.get(state)
         return int((state_dailies[offset].total_positives - state_dailies[offset + 13].total_positives) / 14)
 
+    def get_average_positivities(self, state: str, offset: int = 0, num_days: int = 14):
+        state_dailies = self.state_dailies_map.get(state)
+        return get_positivity_average([
+            self.get_positivity(state_dailies[day]) for day in range(offset, num_days)
+        ])
+
+    def get_moving_average_positivities(self, state: str, offset: int = 0, num_days: int = 14):
+        return [
+            self.get_average_positivities(state, day)
+            for day in range(offset, num_days)
+        ]
+
+    def get_danger_states_avg_positivities(self, offset: int = 0, num_days: int = 14, threshold: int = 10):
+        return {
+            state: avg_positivity
+            for state in self.state_dailies_map.keys()
+            if (avg_positivity := self.get_average_positivities(state, offset, num_days)) is not None and
+               avg_positivity > float(threshold / 100)
+        }
+
     def define_dangerous_case_increases(self, state: str):
         print('hi')
 
@@ -113,11 +141,11 @@ def get_positivity_average(positivities: List[float]):
         for p in positivities
         if is_valid_positivity(p)
     ]
-    total = reduce(add, p_filtered)
+
     if len(p_filtered) == 0:
         return None
     else:
-        return total / len(p_filtered)
+        return reduce(add, p_filtered) / len(p_filtered)
 
 
 if __name__ == '__main__':
