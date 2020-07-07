@@ -36,6 +36,19 @@ class USService:
 
         return new_positives / (new_positives + new_negatives)
 
+    def get_new_hosps(self, offset: int = 0):
+        today_hosps = self.us_dailies[offset].hospitalized_currently
+        yesterday_hosps = self.us_dailies[offset + 1].hospitalized_currently
+
+        return today_hosps - yesterday_hosps
+
+    def get_avg_hosps(self, offset: int = 0, num_days: int = 14):
+        selected_hosps = [self.get_new_hosps(day) for day in range(offset, num_days)]
+        return int(sum(selected_hosps) / num_days)
+
+    def get_14_day_moving_avg_hosps(self, offset: int = 0, num_days: int = 14):
+        return [self.get_avg_hosps(offset=day) for day in range(offset, num_days)]
+
     def get_moving_avg(self, num_days: int = 14):
         return [self.get_14_day_avg_positivities(offset) for offset in range(0, 30)]
 

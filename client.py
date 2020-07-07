@@ -64,8 +64,17 @@ def get_us_dailies():
 
 
 def get_us_states():
-    resp = requests.get('https://covidtracking.com/api/v1/states/info.json')
-    return json.loads(resp.content)
+    if use_cache('states_list'):
+        with open(generate_file_name('states_list'), 'r') as f:
+            states_list_json = json.load(f)
+    else:
+        states_list_content: bytes = requests.get('https://covidtracking.com/api/v1/states/info.json').content
+        states_list_json = json.loads(states_list_content)
+
+        with open(generate_file_name('states_list'), 'w') as f:
+            f.write(states_list_content.decode('utf-8'))
+
+    return states_list_json
 
 
 def get_state_dailies(state):
