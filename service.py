@@ -90,6 +90,12 @@ class StateService:
         state_dailies: List[StateDaily] = self.state_dailies_map.get(state)
         return [state_dailies[day].positives_increase for day in range(offset, num_days)]
 
+    def get_new_tests_for_day(self, state, offset: int = 0) -> int:
+        return self.state_dailies_map.get(state)[offset].total_tests_increase
+
+    def get_historic_new_tests(self, state, offset: int = 0, num_days: int = 14) -> List[int]:
+        return [self.get_new_tests_for_day(state, day) for day in range(offset, offset + num_days)]
+
     def get_historic_hospitalizations(self, state: str, num_days: int = 14, offset: int = 0):
         state_dailies: List[StateDaily] = self.state_dailies_map.get(state)
         return [state_dailies[day].hospitalized_currently for day in range(offset, num_days)]

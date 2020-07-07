@@ -42,24 +42,14 @@ if __name__ == '__main__':
 
     show_state_data = True
     if show_state_data:
-        print('\n~~~~~~~~~~ States Info ~~~~~~~~~\n')
+        print('\n~~~~~~~~~~ States Info ~~~~~~~~~')
         state_service = service.StateService()
 
         for state in state_service.state_dailies_map.keys():
             daily = state_service.state_dailies_map.get(state)[0]
-            print('{} has a daily increase on {} of {}'.format(daily.state, daily.date, daily.positives_increase))
+            print('\n~~~~ {} for {} ~~~~'.format(state, daily.date))
 
-            print('{} is trucking along with positivities of '.format(state), end='')
-            historic_positivity = state_service.get_historic_positivity(state)
-            count = 0
-            for daily_positivity in historic_positivity:
-                count += 1
-                if count != len(historic_positivity):
-                    print(' {0:.1%}'.format(daily_positivity), end=',')
-                else:
-                    print(' {0:.1%}'.format(daily_positivity))
-
-            print('{} tracked new cases of the following: '.format(state), end='')
+            print('New Cases Trend: ', end='')
             historic_cases = state_service.get_historic_positive_cases(state)
             count = 0
             for day in historic_cases:
@@ -69,7 +59,27 @@ if __name__ == '__main__':
                 else:
                     print(' {}'.format(day))
 
-            print('{} has the following hospitalization numbers: '.format(state), end='')
+            print('Daily Tests Trend: ', end='')
+            historic_tests = state_service.get_historic_new_tests(state)
+            count = 0
+            for day in historic_tests:
+                count += 1
+                if count != len(historic_tests):
+                    print(' {}'.format(day), end=',')
+                else:
+                    print(' {}'.format(day))
+
+            print('Positivities = ', end='')
+            historic_positivity = state_service.get_historic_positivity(state)
+            count = 0
+            for daily_positivity in historic_positivity:
+                count += 1
+                if count != len(historic_positivity):
+                    print(' {0:.1%}'.format(daily_positivity), end=',')
+                else:
+                    print(' {0:.1%}'.format(daily_positivity))
+
+            print('Hospitalizations = ', end='')
             hosps = state_service.get_historic_hospitalizations(state)
             count = 0
             for day in hosps:
@@ -78,6 +88,8 @@ if __name__ == '__main__':
                     print(' {}'.format(day), end=',')
                 else:
                     print(' {}'.format(day))
+
+        print('\n ~~~~~~~~ Highway to the Danger Zone ~~~~~~~\n')
 
         todays_positives = state_service.get_positivities_today_over_threshold()
         for state in todays_positives:
