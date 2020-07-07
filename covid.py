@@ -79,6 +79,13 @@ if __name__ == '__main__':
                 else:
                     print(' {0:.1%}'.format(daily_positivity))
 
+            two_week_positivity = state_service.get_average_positivities(state)
+            if two_week_positivity is not None:
+                two_week_positivity_str = '{0:.1%}'.format(two_week_positivity)
+            else:
+                two_week_positivity_str = 'unreported'
+            print('14 day Positivity = {}'.format(two_week_positivity_str))
+
             print('Hospitalizations = ', end='')
             hosps = state_service.get_historic_hospitalizations(state)
             count = 0
