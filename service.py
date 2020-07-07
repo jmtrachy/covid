@@ -20,12 +20,14 @@ class USService:
         """
         return self.us_dailies[0].total_positives
 
-    def get_positives_change_since_yesterday(self, offset=0):
+    def get_positives_change_since_for_day(self, offset=0):
         return self.us_dailies[offset].total_positives - self.us_dailies[offset + 1].total_positives
 
-    def get_14_day_avg_positivities(self, offset: int = 0, num_days: int = 14):
-        return int((self.us_dailies[offset].total_positives -
-                    self.us_dailies[offset + (num_days - 1)].total_positives) / num_days)
+    def get_14_day_avg_positives(self, offset: int = 0, num_days: int = 14):
+        return int(sum([
+            self.get_positives_change_since_for_day(day)
+            for day in range(offset, offset + num_days)]
+        ) / num_days)
 
     def get_positivity(self, offset=0):
         today = self.us_dailies[offset]
@@ -37,36 +39,36 @@ class USService:
         return new_positives / (new_positives + new_negatives)
 
     def get_new_hosps(self, offset: int = 0):
-        today_hosps = self.us_dailies[offset].hospitalized_currently
-        yesterday_hosps = self.us_dailies[offset + 1].hospitalized_currently
+        today_hosps = self.us_dailies[offset].hospitalized_cumulatively
+        yesterday_hosps = self.us_dailies[offset + 1].hospitalized_cumulatively
 
         return today_hosps - yesterday_hosps
 
     def get_avg_hosps(self, offset: int = 0, num_days: int = 14):
-        selected_hosps = [self.get_new_hosps(day) for day in range(offset, num_days)]
+        selected_hosps = [self.get_new_hosps(day) for day in range(offset, offset + num_days)]
         return int(sum(selected_hosps) / num_days)
 
     def get_14_day_moving_avg_hosps(self, offset: int = 0, num_days: int = 14):
-        return [self.get_avg_hosps(offset=day) for day in range(offset, num_days)]
+        return [self.get_avg_hosps(offset=day) for day in range(offset, offset + num_days)]
 
-    def get_moving_avg(self, num_days: int = 14):
-        return [self.get_14_day_avg_positivities(offset) for offset in range(0, 30)]
+    def get_moving_avg_cases(self, offset: int = 0, num_days: int = 14):
+        return [self.get_14_day_avg_positives(offset) for offset in range(offset, offset + num_days)]
 
     def get_14_day_positives(self):
-        return [self.get_positives_change_since_yesterday(offset) for offset in range(0, 14)]
+        return [self.get_positives_change_since_for_day(offset) for offset in range(0, 14)]
 
     def get_recent_positivities(self, offset: int = 0, num_days: int = 14):
         return [self.get_positivity(day) for day in range(offset, num_days)]
 
     def get_average_positivities(self, offset: int = 0, num_days: int = 14):
         return get_positivity_average([
-            self.get_positivity(day) for day in range(offset, num_days)
+            self.get_positivity(day) for day in range(offset, offset + num_days)
         ])
 
     def get_moving_average_positivities(self, offset: int = 0, num_days: int = 14):
         return [
-            self.get_average_positivities(day)
-            for day in range(offset, num_days)
+            self.get_average_positivities(day, 14)
+            for day in range(offset, offset + num_days)
         ]
 
 
@@ -133,7 +135,7 @@ class StateService:
 
     def get_historic_positivity(self, state, num_days=14, offset=0):
         dailies = self.state_dailies_map.get(state)
-        return [StateService.get_positivity(dailies[day]) for day in range(offset, num_days)]
+        return [StateService.get_positivity(dailies[day]) for day in range(offset, offset + num_days)]
 
     def get_positivities_today_over_threshold(self, threshold: int = 10):
         return {

@@ -53,6 +53,7 @@ def get_us_dailies():
             date_entered=daily.get('dateChecked'),
             total_deaths=daily.get('death'),
             hospitalized_currently=daily.get('hospitalizedCurrently'),
+            hospitalized_cumulatively=daily.get('hospitalizedCumulative'),
             in_icu_currently=daily.get('inIcuCurrently'),
             on_vent_currently=daily.get('onVentilatorCurrently'),
             total_negatives=daily.get('negative'),

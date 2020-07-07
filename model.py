@@ -1,11 +1,10 @@
-import json
-
 class USDaily:
     def __init__(self,
                  date,  # Date for which the daily totals were collected
                  date_entered,  # DateTime this data was entered into our database
                  total_deaths,  # Total number of people who have died as a result of COVID-19 so far
                  hospitalized_currently,  # Number of people in hospital for COVID-19 on this day
+                 hospitalized_cumulatively, # Total number of people ever in the hospital for COVID-19
                  in_icu_currently,  # Total number of people in the ICU for COVID-19 on this day
                  on_vent_currently,  # Number of people using a ventilator for COVID-19 on this day
                  total_negatives,  # Total number of people who have tested negative for COVID-19 so far
@@ -16,6 +15,7 @@ class USDaily:
         self.date_entered = date_entered
         self.total_deaths = total_deaths
         self.hospitalized_currently = hospitalized_currently
+        self.hospitalized_cumulatively = hospitalized_cumulatively
         self.in_icu_currently = in_icu_currently
         self.on_vent_currently = on_vent_currently
         self.total_negatives = total_negatives
