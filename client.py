@@ -4,13 +4,14 @@ import model
 import os.path
 import requests
 import time
+from typing import List
 
 
 def generate_file_name(identifier):
     return './data/{}.json'.format(identifier)
 
 
-def use_cache(state):
+def use_cache(state: str) -> bool:
     # Get the generated file name - standardized to be in one place
     file_name = generate_file_name(state)
 
@@ -27,7 +28,7 @@ def use_cache(state):
     return valid_file
 
 
-def get_us_dailies():
+def get_us_dailies() -> List[model.USDaily]:
     us = 'US'
 
     if use_cache(us):
@@ -46,9 +47,8 @@ def get_us_dailies():
             f.write(jsonpickle.encode(dailies_json, unpicklable=False, indent=2))
 
     # Convert the raw json into our python objects
-    dailies = []
-    for daily in dailies_json:
-        dailies.append(model.USDaily(
+    dailies: List[model.USDaily] = [
+        model.USDaily(
             date=daily.get('date'),
             date_entered=daily.get('dateChecked'),
             total_deaths=daily.get('death'),
@@ -59,12 +59,14 @@ def get_us_dailies():
             total_negatives=daily.get('negative'),
             total_positives=daily.get('positive'),
             states_reporting=daily.get('states')
-        ))
+        )
+        for daily in dailies_json
+    ]
 
     return dailies
 
 
-def get_us_states():
+def get_us_states() -> object:
     if use_cache('states_list'):
         with open(generate_file_name('states_list'), 'r') as f:
             states_list_json = json.load(f)
@@ -78,7 +80,7 @@ def get_us_states():
     return states_list_json
 
 
-def get_state_dailies(state):
+def get_state_dailies(state: str) -> List[model.StateDaily]:
 
     if use_cache(state):
         with open(generate_file_name(state), 'r') as f:
@@ -92,9 +94,8 @@ def get_state_dailies(state):
         with open(generate_file_name(state), 'w') as f:
             f.write(jsonpickle.encode(dailies_json, unpicklable=False, indent=2))
 
-    dailies = []
-    for daily in dailies_json:
-        dailies.append(model.StateDaily(
+    dailies: List[model.StateDaily] = [
+        model.StateDaily(
             state=daily.get('state'),
             date=daily.get('date'),
             total_deaths=daily.get('death'),
@@ -111,7 +112,9 @@ def get_state_dailies(state):
             positives_increase=daily.get('positiveIncrease'),
             total_tests=daily.get('totalTestResults'),
             total_tests_increase=daily.get('totalTestResultsIncrease')
-        ))
+        )
+        for daily in dailies_json
+    ]
 
     return dailies
 

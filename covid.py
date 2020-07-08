@@ -1,6 +1,6 @@
 import argparse
 import service
-from typing import List
+from typing import List, Optional
 
 if __name__ == '__main__':
     us_service = service.USService()
@@ -19,6 +19,14 @@ if __name__ == '__main__':
     last_two_weeks_hosps: List[int] = [us_service.get_new_hosps(day) for day in range(0, 14)]
     print('Last 14 days of new hospitalizations = {}'.format(last_two_weeks_hosps))
     print('Moving average of hospitalizations = {}'.format(us_service.get_14_day_moving_avg_hosps(num_days=30)))
+
+    # Deaths across the country
+    print('\nDeath info:')
+    print('Today\'s new deaths = {}'.format(us_service.get_new_deaths()))
+    print('Today\'s total deaths = {}'.format(us_service.us_dailies[0].total_deaths))
+    last_two_weeks_deaths: List[int] = [us_service.get_new_deaths(day) for day in range(0, 14)]
+    print('Last 14 days of new deaths = {}'.format(last_two_weeks_deaths))
+    print('Moving average of deaths = {}'.format(us_service.get_moving_avg_deaths(num_days=30)))
 
     print('\nPositivity Info:')
     print('Today\'s positivity = {0:.1%}'.format(us_service.get_positivity()))
@@ -49,7 +57,7 @@ if __name__ == '__main__':
             daily = state_service.state_dailies_map.get(state)[0]
             print('\n~~~~ {} for {} ~~~~'.format(state, daily.date))
 
-            print('New Cases Trend: ', end='')
+            print('New Cases Trend:', end='')
             historic_cases = state_service.get_historic_positive_cases(state)
             count = 0
             for day in historic_cases:
@@ -59,7 +67,7 @@ if __name__ == '__main__':
                 else:
                     print(' {}'.format(day))
 
-            print('Daily Tests Trend: ', end='')
+            print('Daily Tests Trend:', end='')
             historic_tests = state_service.get_historic_new_tests(state)
             count = 0
             for day in historic_tests:
@@ -69,7 +77,7 @@ if __name__ == '__main__':
                 else:
                     print(' {}'.format(day))
 
-            print('Positivities = ', end='')
+            print('Positivities =', end='')
             historic_positivity = state_service.get_historic_positivity(state)
             count = 0
             for daily_positivity in historic_positivity:
@@ -86,7 +94,7 @@ if __name__ == '__main__':
                 two_week_positivity_str = 'unreported'
             print('14 day Positivity = {}'.format(two_week_positivity_str))
 
-            print('Hospitalizations = ', end='')
+            print('Hospitalizations =', end='')
             hosps = state_service.get_historic_hospitalizations(state)
             count = 0
             for day in hosps:
@@ -96,11 +104,22 @@ if __name__ == '__main__':
                 else:
                     print(' {}'.format(day))
 
+            print('Total Deaths = {}'.format(state_service.state_dailies_map.get(state)[0].total_deaths))
+            print('Deaths =', end='')
+            deaths = state_service.get_historic_new_deaths(state)
+            count = 0
+            for day in deaths:
+                count += 1
+                if count != len(deaths):
+                    print(' {}'.format(day), end=',')
+                else:
+                    print(' {}'.format(day))
+
         print('\n ~~~~~~~~ Highway to the Danger Zone ~~~~~~~\n')
 
-        todays_positives = state_service.get_positivities_today_over_threshold()
-        for state in todays_positives:
-            print('{0} has a positivity rate of {1:.1%} - last 4 days: '.format(state, todays_positives[state]), end='')
+        todays_positives: [(str, float)] = state_service.get_positivities_today_over_threshold()
+        for (state, positivity) in todays_positives:
+            print('{0} has a positivity rate of {1:.1%} - previous 4 days: '.format(state, positivity), end='')
             previous_days = state_service.get_historic_positivity(state, offset=1, num_days=4)
             count = 0
             for day in previous_days:
@@ -110,6 +129,11 @@ if __name__ == '__main__':
                 else:
                     print(' {0:.1%}'.format(day))
 
-        danger_positivities = state_service.get_danger_states_avg_positivities()
-        for state in danger_positivities:
-            print('{0} has a 14 day positivity average of {1:.1%}'.format(state, danger_positivities[state]))
+        danger_positivities: [(str, float)] = state_service.get_danger_states_avg_positivities()
+        for (state, avg_positivity) in danger_positivities:
+            print('{0} has a 14 day positivity average of {1:.1%}'.format(state, avg_positivity))
+
+        top_death_states: [(str, Optional[int])] = state_service.get_top_death_states()
+        for (state, deaths) in top_death_states:
+            print('{} = {}'.format(state, deaths))
+
