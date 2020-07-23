@@ -1,4 +1,4 @@
-import client
+from client import CovidClient
 from functools import reduce
 from model import StateDaily
 from operator import add
@@ -12,6 +12,7 @@ class USService:
     """
 
     def __init__(self):
+        client = CovidClient()
         self.us_dailies = client.get_us_dailies()
 
     ###########################################################
@@ -99,11 +100,32 @@ class USService:
 
 class StateService:
     def __init__(self):
+        client = CovidClient()
         self.states = client.get_us_states()
+        self.state_meta = client.get_state_meta()
         self.state_abbvs: List[str] = [state.get('state') for state in self.states]
         self.state_dailies_map: Dict[str, List[StateDaily]] = {
             state.get('state'): client.get_state_dailies(state.get('state')) for state in self.states
         }
+
+    ###########################################################
+    # ---------------------- ICU methods -------------------- #
+    ###########################################################
+    def get_icu(self, state: str, offset: int = 0) -> int:
+        return self.state_dailies_map.get(state)[offset].in_icu_currently
+
+    def get_icus(self, state: str, offset: int = 0, num_days = 14) -> List[int]:
+        state_dailies: List[StateDaily] = self.state_dailies_map.get(state)
+        return [state_dailies[day].in_icu_currently for day in range(offset, num_days)]
+
+    def get_change_in_icu(self, state: str, offset: int = 0, timespan: int = 7) -> float:
+        todays_icus: int = self.get_icu(state, offset)
+        older_icus: int = self.get_icu(state, timespan)
+
+        if todays_icus is not None and older_icus is not None and older_icus != 0:
+            return (older_icus - todays_icus) / older_icus
+        else:
+            return 0
 
     def get_current_total_positives(self, state: str, offset=0) -> int:
         return self.state_dailies_map.get(state)[offset].total_positives
@@ -127,6 +149,13 @@ class StateService:
     def get_historic_new_deaths(self, state: str, offset: int = 0, num_days: int = 14) -> List[int]:
         return [self.get_new_deaths_for_day(state, day) for day in range(offset, offset + num_days)]
 
+    def get_avg_new_deaths(self, state: str, offset: int = 0, num_days: int = 14) -> int:
+        return int(sum(self.get_historic_new_deaths(state, offset, num_days)) / num_days)
+
+    def get_moving_avg_new_deaths(self, state: str, offset: int = 0, num_days: int = 14, num_days_in_avg: int = 14) \
+            -> List[int]:
+        return [self.get_avg_new_deaths(state, day, num_days_in_avg) for day in range(offset, num_days + offset)]
+
     def get_historic_hospitalizations(self, state: str, num_days: int = 14, offset: int = 0) -> List[int]:
         state_dailies: List[StateDaily] = self.state_dailies_map.get(state)
         return [state_dailies[day].hospitalized_currently for day in range(offset, num_days)]
@@ -137,15 +166,35 @@ class StateService:
 
     def get_average_positivities(self, state: str, offset: int = 0, num_days: int = 14) -> float:
         state_dailies = self.state_dailies_map.get(state)
-        return get_positivity_average([
-            self.get_positivity(state_dailies[day]) for day in range(offset, num_days)
+        avg_positivity = get_positivity_average([
+            self.get_positivity(state_dailies[day]) for day in range(offset, num_days + offset)
         ])
+        if avg_positivity is None:
+            avg_positivity = 0
+        return avg_positivity
 
     def get_moving_average_positivities(self, state: str, offset: int = 0, num_days: int = 14) -> List[float]:
         return [
             self.get_average_positivities(state, day)
             for day in range(offset, num_days)
         ]
+
+    def get_pro_rated_number(self, numerator: int, denominator: int) -> int:
+        if denominator is not None and denominator > 0 and numerator is not None:
+            return int(numerator / denominator)
+        else:
+            return 0
+
+    def get_icus_pro_rated(self, threshold: int = 10) -> [(str, int)]:
+        all_valid_pro_rated = [
+            (state, pro_rated_result)
+            for state in self.state_dailies_map.keys()
+            if (pro_rated_result := self.get_pro_rated_number(
+                self.state_dailies_map.get(state)[0].in_icu_currently,
+                self.state_meta.get(state).get('electoral_votes'))) > threshold
+        ]
+        # Sort so it's by highest pro-rated value first
+        return sorted(all_valid_pro_rated, key=lambda tup: tup[1], reverse=True)
 
     def get_danger_states_avg_positivities(
             self,

@@ -1,0 +1,173 @@
+{
+  "AK": {
+    "electoral_votes": 3
+  },
+  "AL": {
+    "electoral_votes": 9
+  },
+  "AR": {
+    "electoral_votes": 6
+  },
+  "AS": {
+    "electoral_votes": 0
+  },
+  "AZ": {
+    "electoral_votes": 11
+  },
+  "CA": {
+    "electoral_votes": 55
+  },
+  "CO": {
+    "electoral_votes": 9
+  },
+  "CT": {
+    "electoral_votes": 7
+  },
+  "DC": {
+    "electoral_votes": 3
+  },
+  "DE": {
+    "electoral_votes": 3
+  },
+  "FL": {
+    "electoral_votes": 29
+  },
+  "GA": {
+    "electoral_votes": 16
+  },
+  "GU": {
+    "electoral_votes": 0
+  },
+  "HI": {
+    "electoral_votes": 4
+  },
+  "IA": {
+    "electoral_votes": 6
+  },
+  "ID": {
+    "electoral_votes": 4
+  },
+  "IL": {
+    "electoral_votes": 20
+  },
+  "IN": {
+    "electoral_votes": 11
+  },
+  "KS": {
+    "electoral_votes": 6
+  },
+  "KY": {
+    "electoral_votes": 8
+  },
+  "LA": {
+    "electoral_votes": 8
+  },
+  "MA": {
+    "electoral_votes": 11
+  },
+  "MD": {
+    "electoral_votes": 10
+  },
+  "ME": {
+    "electoral_votes": 4
+  },
+  "MI": {
+    "electoral_votes": 16
+  },
+  "MN": {
+    "electoral_votes": 10
+  },
+  "MO": {
+    "electoral_votes": 10
+  },
+  "MP": {
+    "electoral_votes": 0
+  },
+  "MS": {
+    "electoral_votes": 6
+  },
+  "MT": {
+    "electoral_votes": 3
+  },
+  "NC": {
+    "electoral_votes": 15
+  },
+  "ND": {
+    "electoral_votes": 3
+  },
+  "NE": {
+    "electoral_votes": 5
+  },
+  "NH": {
+    "electoral_votes": 4
+  },
+  "NJ": {
+    "electoral_votes": 14
+  },
+  "NM": {
+    "electoral_votes": 5
+  },
+  "NV": {
+    "electoral_votes": 6
+  },
+  "NY": {
+    "electoral_votes": 29
+  },
+  "OH": {
+    "electoral_votes": 18
+  },
+  "OK": {
+    "electoral_votes": 7
+  },
+  "OR": {
+    "electoral_votes": 7
+  },
+  "PA": {
+    "electoral_votes": 20
+  },
+  "PR": {
+    "electoral_votes": 0
+  },
+  "RI": {
+    "electoral_votes": 4
+  },
+  "SC": {
+    "electoral_votes": 9
+  },
+  "SD": {
+    "electoral_votes": 3
+  },
+  "TN": {
+    "electoral_votes": 11
+  },
+  "TX": {
+    "electoral_votes": 38
+  },
+  "US": {
+    "electoral_votes": 0
+  },
+  "UT": {
+    "electoral_votes": 6
+  },
+  "VA": {
+    "electoral_votes": 13
+  },
+  "VI": {
+    "electoral_votes": 0
+  },
+  "VT": {
+    "electoral_votes": 3
+  },
+  "WA": {
+    "electoral_votes": 12
+  },
+  "WI": {
+    "electoral_votes": 10
+  },
+  "WV": {
+    "electoral_votes": 5
+  },
+  "WY": {
+    "electoral_votes": 3
+  }
+}

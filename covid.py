@@ -55,7 +55,8 @@ if __name__ == '__main__':
 
         for state in state_service.state_dailies_map.keys():
             daily = state_service.state_dailies_map.get(state)[0]
-            print('\n~~~~ {} for {} ~~~~'.format(state, daily.date))
+            electoral_votes = state_service.state_meta.get(state).get('electoral_votes')
+            print('\n~~~~ {} for {} with pop = {} ~~~~'.format(state, daily.date, electoral_votes))
 
             print('New Cases Trend:', end='')
             historic_cases = state_service.get_historic_positive_cases(state)
@@ -87,6 +88,23 @@ if __name__ == '__main__':
                 else:
                     print(' {0:.1%}'.format(daily_positivity))
 
+            # Positivity trend
+            seven_day_state_avg = state_service.get_average_positivities(state, offset=0, num_days=7)
+            last_week_state_avg = state_service.get_average_positivities(state, offset=7, num_days=7)
+            two_weeks_ago_state_avg = state_service.get_average_positivities(state, offset=14, num_days=7)
+            three_weeks_ago_state_avg = state_service.get_average_positivities(state, offset=21, num_days=7)
+            four_weeks_ago_state_avg = state_service.get_average_positivities(state, offset=28, num_days=7)
+            five_weeks_ago_state_avg = state_service.get_average_positivities(state, offset=35, num_days=7)
+            print('Positivity Trend - today, 7 days ago, 14, etc... = '
+                  '{0:.1%}, {1:.1%}, {2:.1%}, {3:.1%}, {4:.1%}, {5:.1%}'.format(
+                seven_day_state_avg,
+                last_week_state_avg,
+                two_weeks_ago_state_avg,
+                three_weeks_ago_state_avg,
+                four_weeks_ago_state_avg,
+                five_weeks_ago_state_avg
+            ))
+
             two_week_positivity = state_service.get_average_positivities(state)
             if two_week_positivity is not None:
                 two_week_positivity_str = '{0:.1%}'.format(two_week_positivity)
@@ -104,6 +122,18 @@ if __name__ == '__main__':
                 else:
                     print(' {}'.format(day))
 
+            print('ICUs =', end='')
+            icus = state_service.get_icus(state)
+            count = 0
+            for day in icus:
+                count += 1
+                if count != len(icus):
+                    print(' {}'.format(day), end=',')
+                else:
+                    print(' {}'.format(day))
+            if electoral_votes > 0 and icus[0] is not None:
+                print('ICU per electoral vote: {}'.format(int(icus[0] / electoral_votes)))
+
             print('Total Deaths = {}'.format(state_service.state_dailies_map.get(state)[0].total_deaths))
             print('Deaths =', end='')
             deaths = state_service.get_historic_new_deaths(state)
@@ -115,11 +145,12 @@ if __name__ == '__main__':
                 else:
                     print(' {}'.format(day))
 
-        print('\n ~~~~~~~~ Highway to the Danger Zone ~~~~~~~\n')
+        print('\n~~~~~~~~ Highway to the Danger Zone ~~~~~~~\n')
 
-        todays_positives: [(str, float)] = state_service.get_positivities_today_over_threshold()
+        print('Positivities over 8% today')
+        todays_positives: [(str, float)] = state_service.get_positivities_today_over_threshold(threshold=8)
         for (state, positivity) in todays_positives:
-            print('{0} has a positivity rate of {1:.1%} - previous 4 days: '.format(state, positivity), end='')
+            print('{0} = {1:.1%} - previous 4 days: '.format(state, positivity), end='')
             previous_days = state_service.get_historic_positivity(state, offset=1, num_days=4)
             count = 0
             for day in previous_days:
@@ -129,11 +160,32 @@ if __name__ == '__main__':
                 else:
                     print(' {0:.1%}'.format(day))
 
+        print('\nPositivity numbers where 14 day is over 10%')
         danger_positivities: [(str, float)] = state_service.get_danger_states_avg_positivities()
         for (state, avg_positivity) in danger_positivities:
-            print('{0} has a 14 day positivity average of {1:.1%}'.format(state, avg_positivity))
+            seven_day_avg = state_service.get_average_positivities(state, offset=0, num_days=7)
+            seven_day_two_weeks_ago = state_service.get_average_positivities(state, offset=14, num_days=7)
+            print('{0}: 14-day = {1:.1%};    7-day = {2:.1%};     diff from 2 weeks ago: {3:.1%}'.format(
+                state,
+                avg_positivity,
+                seven_day_avg,
+                seven_day_avg - seven_day_two_weeks_ago
+            ))
 
+        print('\nTop 10 state deaths reported')
         top_death_states: [(str, Optional[int])] = state_service.get_top_death_states()
         for (state, deaths) in top_death_states:
-            print('{} = {}'.format(state, deaths))
+            seven_day_avg = state_service.get_avg_new_deaths(state, offset=0, num_days=7)
+            moving_seven_day = state_service.get_moving_avg_new_deaths(state, offset=1, num_days=7)
+            print('{}: today = {};     7-day avg = {};   moving-7-day: {}'.format(
+                state,
+                deaths,
+                seven_day_avg,
+                moving_seven_day
+            ))
+
+        print('\nTop state ICU')
+        pro_rated_icus: [(str, int)] = state_service.get_icus_pro_rated(threshold=0)
+        for (state, pro_rated_icu) in pro_rated_icus:
+            print('{} pro rated at {}'.format(state, pro_rated_icu))
 
