@@ -172,8 +172,8 @@ if __name__ == '__main__':
                 seven_day_avg - seven_day_two_weeks_ago
             ))
 
-        print('\nTop 10 state deaths reported')
-        top_death_states: [(str, Optional[int])] = state_service.get_top_death_states()
+        print('\nTop 20 state deaths reported')
+        top_death_states: [(str, Optional[int])] = state_service.get_top_death_states(threshold=20)
         for (state, deaths) in top_death_states:
             seven_day_avg = state_service.get_avg_new_deaths(state, offset=0, num_days=7)
             moving_seven_day = state_service.get_moving_avg_new_deaths(state, offset=1, num_days=7)
