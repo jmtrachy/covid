@@ -9,12 +9,14 @@ from typing import List
 
 class CovidClient:
 
-    def generate_file_name(self, identifier):
+    @staticmethod
+    def generate_file_name(identifier):
         return './data/{}.json'.format(identifier)
 
-    def use_cache(self, state: str) -> bool:
+    @staticmethod
+    def use_cache(state: str) -> bool:
         # Get the generated file name - standardized to be in one place
-        file_name = self.generate_file_name(state)
+        file_name = CovidClient.generate_file_name(state)
 
         # Check to see if the file exists.
         if os.path.isfile(file_name):
@@ -34,7 +36,7 @@ class CovidClient:
         if self.use_cache(us):
 
             # If the file is properly cached then just use it
-            with open(self.generate_file_name(us), 'r') as f:
+            with open(CovidClient.generate_file_name(us), 'r') as f:
                 dailies_json = json.load(f)
 
         else:
@@ -43,7 +45,7 @@ class CovidClient:
             dailies_json = json.loads(resp.content)
 
             # Now cache the file for next time through
-            with open(self.generate_file_name(us), 'w') as f:
+            with open(CovidClient.generate_file_name(us), 'w') as f:
                 f.write(jsonpickle.encode(dailies_json, unpicklable=False, indent=2))
 
         # Convert the raw json into our python objects
@@ -67,18 +69,19 @@ class CovidClient:
 
     def get_us_states(self):
         if self.use_cache('states_list'):
-            with open(self.generate_file_name('states_list'), 'r') as f:
+            with open(CovidClient.generate_file_name('states_list'), 'r') as f:
                 states_list_json = json.load(f)
         else:
             states_list_content: bytes = requests.get('https://covidtracking.com/api/v1/states/info.json').content
             states_list_json = json.loads(states_list_content)
 
-            with open(self.generate_file_name('states_list'), 'w') as f:
+            with open(CovidClient.generate_file_name('states_list'), 'w') as f:
                 f.write(states_list_content.decode('utf-8'))
 
         return states_list_json
 
-    def get_state_meta(self):
+    @staticmethod
+    def get_state_meta():
         with open('state_meta.json', 'r') as f:
             state_meta = json.load(f)
 
@@ -95,7 +98,7 @@ class CovidClient:
             resp = requests.get('https://covidtracking.com/api/v1/states/{}/daily.json'.format(state.lower()))
             dailies_json = json.loads(resp.content)
 
-            with open(self.generate_file_name(state), 'w') as f:
+            with open(CovidClient.generate_file_name(state), 'w') as f:
                 f.write(jsonpickle.encode(dailies_json, unpicklable=False, indent=2))
 
         dailies: List[model.StateDaily] = [

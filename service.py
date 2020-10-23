@@ -102,7 +102,7 @@ class StateService:
     def __init__(self):
         client = CovidClient()
         self.states = client.get_us_states()
-        self.state_meta = client.get_state_meta()
+        self.state_meta = CovidClient.get_state_meta()
         self.state_abbvs: List[str] = [state.get('state') for state in self.states]
         self.state_dailies_map: Dict[str, List[StateDaily]] = {
             state.get('state'): client.get_state_dailies(state.get('state')) for state in self.states
@@ -114,7 +114,7 @@ class StateService:
     def get_icu(self, state: str, offset: int = 0) -> int:
         return self.state_dailies_map.get(state)[offset].in_icu_currently
 
-    def get_icus(self, state: str, offset: int = 0, num_days = 14) -> List[int]:
+    def get_icus(self, state: str, offset: int = 0, num_days: int = 14) -> List[int]:
         state_dailies: List[StateDaily] = self.state_dailies_map.get(state)
         return [state_dailies[day].in_icu_currently for day in range(offset, num_days)]
 
@@ -179,7 +179,8 @@ class StateService:
             for day in range(offset, num_days)
         ]
 
-    def get_pro_rated_number(self, numerator: int, denominator: int) -> int:
+    @staticmethod
+    def get_pro_rated_number(numerator: int, denominator: int) -> int:
         if denominator is not None and denominator > 0 and numerator is not None:
             return int(numerator / denominator)
         else:
@@ -205,8 +206,8 @@ class StateService:
         all_avg_positivities: [(str, float)] = [
             (state, avg_positivity)
             for state in self.state_dailies_map.keys()
-            if (avg_positivity := self.get_average_positivities(state, offset, num_days)) is not None and
-               avg_positivity > float(threshold / 100)
+            if (avg_positivity := self.get_average_positivities(state, offset, num_days)) is not None
+            and avg_positivity > float(threshold / 100)
         ]
         return sorted(all_avg_positivities, key=lambda tup: tup[1], reverse=True)
 
@@ -226,7 +227,7 @@ class StateService:
             (state_dailies[0].state, positivity)
             for state_dailies in self.state_dailies_map.values()
             if (positivity := StateService.get_positivity(state_dailies[0])) > (threshold / 100)
-               and positivity < 1.0
+            and positivity < 1.0
         ]
         return sorted(positivities_over_threshold, key=lambda tup: tup[1], reverse=True)
 
@@ -258,4 +259,3 @@ def get_positivity_average(positivities: List[float]) -> Optional[float]:
 
 if __name__ == '__main__':
     ss = StateService()
-

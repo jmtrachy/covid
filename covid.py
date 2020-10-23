@@ -1,4 +1,4 @@
-import argparse
+# import argparse
 import service
 from typing import List, Optional
 
@@ -188,4 +188,3 @@ if __name__ == '__main__':
         pro_rated_icus: [(str, int)] = state_service.get_icus_pro_rated(threshold=0)
         for (state, pro_rated_icu) in pro_rated_icus:
             print('{} pro rated at {}'.format(state, pro_rated_icu))
-
